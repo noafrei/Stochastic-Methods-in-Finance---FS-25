@@ -8,7 +8,13 @@
   packages = [ pkgs.git ];
 
   # https://devenv.sh/languages/
-  # languages.rust.enable = true;
+  languages.python = {
+    enable = true;
+    uv = {
+      enable = true;
+      sync.enable = true;
+    };
+  };
 
   # https://devenv.sh/processes/
   # processes.cargo-watch.exec = "cargo-watch";
@@ -17,13 +23,10 @@
   # services.postgres.enable = true;
 
   # https://devenv.sh/scripts/
-  scripts.hello.exec = ''
-    echo hello from $GREET
-  '';
 
   enterShell = ''
-    hello
     git --version
+    source .devenv/state/venv/bin/activate
   '';
 
   # https://devenv.sh/tasks/
