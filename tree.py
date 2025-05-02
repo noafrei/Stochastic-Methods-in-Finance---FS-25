@@ -1,6 +1,11 @@
 from typing import List
 import numpy as np
+import matplotlib.pyplot as plt
 from time import time
+from scipy.stats import norm
+
+import matplotlib
+matplotlib.use('qtagg')  # or 'QtAgg' depending on your Qt installation
 
 def add_children(node: List, up : float, down : float, max_depth : int):
     # layer of the tree is as follows:
@@ -46,7 +51,24 @@ def price_asian_call_option(leaves, r: float, q: float, K: float) -> float:
     discount = (1 + r) ** -depth
     return expectation * discount
 
-def print_option_details(s0, k, r_ann, sig, t_years, steps, u, d, q_prob, price):
+def approximate_asian_call_option(leaves, r: float, q: float, K: float) -> float:
+    depth = leaves[0]
+    up_counts = leaves[1]
+    avg_prices = leaves[3]
+
+    mean_up = depth * q
+    std_up = np.sqrt(depth * q * (1-q))
+
+    normal_probs = norm.pdf(up_counts, loc=mean_up, scale=std_up)
+    normal_probs = normal_probs / np.sum(normal_probs)
+
+    payoffs = np.maximum(avg_prices - K, 0)
+    expectation = np.dot(normal_probs, payoffs)
+
+    discount = (1 + r) ** -depth
+    return expectation * discount
+
+def print_option_details(s0, k, r_ann, sig, t_years, steps, u, d, q_prob, price, approx):
     """Prints the parameters and calculated price in a formatted way."""
     dt = t_years / steps
     r_step = r_ann / steps # Or r_ann * dt if r_ann is effective annual
@@ -71,8 +93,51 @@ def print_option_details(s0, k, r_ann, sig, t_years, steps, u, d, q_prob, price)
     print("-"*50)
     print("Calculated Result:")
     print(f"  Option Price:           {price:>20.4f}")
+    print(f"  Aprx. Option Price:     {approx:>20.4f}")
     print("="*50)
 
+def plot_end_leaves_histogram(leaves, num_bins: int):
+    """
+    Plots histograms for the final stock prices and final average prices
+    at the end leaves of the binomial tree.
+
+    Args:
+        leaves: The tree structure after add_children has run.
+                Expected format: [depth, [ups], [final_prices], [avg_prices]]
+        num_bins: The number of bins to use in the histograms.
+    """
+    if not leaves or len(leaves) < 4:
+        print("Error: Invalid 'leaves' data structure provided.")
+        return
+
+    final_prices = leaves[2]
+    avg_prices = leaves[3]
+    depth = leaves[0]
+
+    if final_prices is None or avg_prices is None or len(final_prices) == 0:
+        print("Error: No price data found in the leaves.")
+        return
+
+    print(f"\nPlotting histograms for {len(final_prices)} leaf nodes (Depth={depth})...")
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6)) # Create a figure with 2 subplots
+
+    # Histogram for Final Stock Prices
+    axes[0].hist(final_prices, bins=num_bins, color='blue', edgecolor='black', alpha=0.7)
+    axes[0].set_title(f'Distribution of Final Stock Prices (N={depth})')
+    axes[0].set_xlabel('Final Stock Price')
+    axes[0].set_ylabel('Frequency')
+    axes[0].grid(axis='y', linestyle='--', alpha=0.6)
+
+    # Histogram for Average Path Prices
+    axes[1].hist(avg_prices, bins=num_bins, color='green', edgecolor='black', alpha=0.7)
+    axes[1].set_title(f'Distribution of Average Path Prices (N={depth})')
+    axes[1].set_xlabel('Average Stock Price Along Path')
+    axes[1].set_ylabel('Frequency')
+    axes[1].grid(axis='y', linestyle='--', alpha=0.6)
+
+    plt.tight_layout() # Adjust layout to prevent overlap
+    plt.show()
 
 price_0 = 391.16
 ups = 0
@@ -83,11 +148,11 @@ down_factor = np.exp(-sigma * np.sqrt(1/25))
 periods = 25
 T_years = 1.0
 
-r_annual = 0.05
+r_annual = 0.01
 growth_factor = 1 + r_annual / periods
 risk_neutral_prob = (growth_factor - down_factor) / (up_factor - down_factor)
 
-strike_price = 400
+strike_price = 410
 
 start = time()
 add_children(tree, up_factor, down_factor, periods)
@@ -95,6 +160,7 @@ end = time()
 print(f"Success! Building tree took {round(end - start, 3)} seconds")
 
 call_price = price_asian_call_option(tree, r_annual/periods, risk_neutral_prob, strike_price)
+aprx_call_price = approximate_asian_call_option(tree, r_annual/periods, risk_neutral_prob, strike_price)
 
 print_option_details(
         s0=price_0,
@@ -106,6 +172,11 @@ print_option_details(
         u=up_factor,
         d=down_factor,
         q_prob=risk_neutral_prob,
-        price=call_price
+        price=call_price,
+        approx=aprx_call_price
     )
 
+#avg_prices = tree[3]
+#print(np.mean(avg_prices), np.std(avg_prices))
+#number_of_bins = 200
+#plot_end_leaves_histogram(tree, num_bins=number_of_bins)
