@@ -12,22 +12,22 @@ def add_children(node: List, up : float, down : float, max_depth : int):
     # [depth, [ups], [prices], [avg prices]]
     depth = node[0]
     if depth == max_depth:
+        # convert sum to average
+        node[3] = node[3] / max_depth
         return
 
     prices = node[2]
-    avg_prices = node[3]
+    price_sums = node[3]
 
     up_prices = prices * up
     down_prices = prices * down
 
-    price_sums = depth * avg_prices
-
-    up_averages = (price_sums + up_prices) / (depth + 1)
-    down_averages = (price_sums + down_prices) / (depth + 1)
+    up_sums = price_sums + up_prices
+    down_sums = price_sums + down_prices
 
     node[0] += 1
     node[2] = np.concatenate((up_prices, down_prices))
-    node[3] = np.concatenate((up_averages, down_averages))
+    node[3] = np.concatenate((up_sums, down_sums))
     node[1] = np.concatenate((node[1], node[1]))
 
     ups = np.zeros(len(node[1]), dtype=node[1].dtype)
@@ -78,22 +78,22 @@ def print_option_details(s0, k, r_ann, sig, t_years, steps, u, d, q_prob, price,
     print(" Binomial Tree (Non-Recombining) Results")
     print("="*50)
     print("Input Parameters:")
-    print(f"  Initial Stock Price (S0): {s0:>20.2f}")
-    print(f"  Strike Price (K):       {k:>20.2f}")
-    print(f"  Annual Risk-Free Rate (r):{r_ann:>18.4f} ({r_ann:.2%})")
-    print(f"  Volatility (sigma):     {sig:>20.4f}")
-    print(f"  Time to Maturity (T):   {t_years:>20.2f} years")
-    print(f"  Number of Steps (N):    {steps:>20d}")
+    print(f"  Initial Stock Price (S0):{s0:>20.2f}")
+    print(f"  Strike Price (K):        {k:>20.2f}")
+    print(f"  Annual Risk-Free Rate (r): {r_ann:>18.4f} ({r_ann:.2%})")
+    print(f"  Volatility (sigma):      {sig:>20.4f}")
+    print(f"  Time to Maturity (T):    {t_years:>20.2f} years")
+    print(f"  Number of Steps (N):     {steps:>20d}")
     print("\nDerived Model Parameters:")
-    print(f"  Time Step (dt):         {dt:>20.6f}")
-    print(f"  Interest Rate per Step: {r_step:>20.6f}")
-    print(f"  Up Factor (u):          {u:>20.6f}")
-    print(f"  Down Factor (d):        {d:>20.6f}")
-    print(f"  Risk-Neutral Prob (q):  {q_prob:>20.6f}")
+    print(f"  Time Step (dt):          {dt:>20.6f}")
+    print(f"  Interest Rate per Step:  {r_step:>20.6f}")
+    print(f"  Up Factor (u):           {u:>20.6f}")
+    print(f"  Down Factor (d):         {d:>20.6f}")
+    print(f"  Risk-Neutral Prob (q):   {q_prob:>20.6f}")
     print("-"*50)
     print("Calculated Result:")
-    print(f"  Option Price:           {price:>20.4f}")
-    print(f"  Aprx. Option Price:     {approx:>20.4f}")
+    print(f"  Option Price:            {price:>20.4f}")
+    print(f"  Aprx. Option Price:      {approx:>20.4f}")
     print("="*50)
 
 def plot_end_leaves_histogram(leaves, num_bins: int):
