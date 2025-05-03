@@ -34,6 +34,7 @@
 		  packages = with pkgs; [
 		    zlib
 		    qt6.full
+		    jupyter
 		  ];
 
 	
