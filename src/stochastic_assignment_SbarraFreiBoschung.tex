@@ -37,6 +37,62 @@
 \pagebreak
 
 \section{Introduction}
+\label{sec:Introduction}
 
+\section{Approximation}%
+\label{sec:Approximation}
+
+The evolution of the stock price can also be
+expressed in terms of log-returns. Supposed we
+observe the price of the stock at discrete time
+points over the interval $[0, T]$, where
+observations are taken at regular intervals of
+size $\Delta_t$. Specifically, we observe prices log
+prices $Y_{t_i} = \log(S_{t_i})$ at
+times $t_i = i\Delta_t$ for $i = 0, 1, \dots, n$,
+where $n\Delta_t = T$. Then $r_{t_i} = Y_{t_i} -
+Y_{t_{i-1}}$ is the continuously compounded return
+of the stock over the period $[t_{i-1}, t_i]$. The
+evolution of the log price can therefore be
+written as
+\begin{equation}
+  Y_{t_j} = Y_{t_0} + \sum^{j}_{i=1} r_{t_i} \quad
+  j = 1, \dots, n.
+\end{equation}
+The returns $r_{t_i}$ have the following moments
+\begin{equation}
+\begin{gathered}
+  E(r_{t_i}) = \frac{1}{2} \sigma \sqrt{\Delta_t}
+  - \frac{1}{2} \sigma \sqrt{\Delta_t} = 0 \\
+  \operatorname{Var}\left( r_{t_i}\right)=\frac{1}{2} \sigma^2 \Delta t+\frac{1}{2} \sigma^2 \Delta t=\sigma^2 \Delta_t .
+\end{gathered}
+\end{equation}
+where $\sigma$ is the annualized volatility, which
+is assumed to constant. Since the returns are
+assumed to be independent, we can approximate the
+distribution of the return over an entire period
+with a normal distribution thanks to the central
+limit theorem
+\begin{equation}
+  Y_{t_j} - Y_{t_0} = \sum^{j}_{i=1} r_{t_i}
+  \sim N(0, j \sigma^2 \Delta_t).
+\end{equation}
+From that it follows that the price $S_{t_j}$ can
+be approximated as
+\begin{equation}
+\begin{aligned}
+  S_{t_j} &\approx \exp(Y_{t_0} + N(0, j\sigma^2 \Delta_t)) \\
+  &= S_{t_0} \cdot \exp(N(0, j\sigma^2 \Delta_t))
+\end{aligned}
+\end{equation}
+and hence the average price over the entire period
+can be approximated as
+\begin{equation}
+\begin{aligned}
+  \overline S &\approx \frac{1}{n} \sum^{n}_{j=1} S_{t_0}
+  \exp(N(0, j\sigma^2\Delta_t)) \\
+  &= \frac{S_{t_0}}{n} \sum^{n}_{j=1} \exp(N(0, j\sigma^2\Delta_t))
+\end{aligned}
+\end{equation}
 
 \end{document}
