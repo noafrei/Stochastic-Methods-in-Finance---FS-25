@@ -7,6 +7,6 @@ data = data.rename(columns={'Close/Last': 'Close'})
 data['Close'] = pd.to_numeric(data['Close'].str.replace('$', '').str.replace(',', ''), errors='coerce')
 
 data['log_returns'] = np.log(data['Close']).diff()
-std = data['log_returns'].std() * np.sqrt(252)
+std = data['log_returns'].std() * np.sqrt(250)
 
 print(std)
