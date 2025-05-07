@@ -146,21 +146,22 @@ sigma = 0.2713948019202162
 up_factor = np.exp(sigma * np.sqrt(1/25))
 down_factor = np.exp(-sigma * np.sqrt(1/25))
 periods = 25
-T_years = 1.0
+T_years = 0.5
 
 r_annual = 0.01
-growth_factor = 1 + r_annual / periods
+r_actual = r_annual * T_years
+growth_factor = 1 + r_actual / periods
 risk_neutral_prob = (growth_factor - down_factor) / (up_factor - down_factor)
 
-strike_price = 410
+strike_price = 400
 
 start = time()
 add_children(tree, up_factor, down_factor, periods)
 end = time()
 print(f"Success! Building tree took {round(end - start, 3)} seconds")
 
-call_price = price_asian_call_option(tree, r_annual/periods, risk_neutral_prob, strike_price)
-aprx_call_price = approximate_asian_call_option(tree, r_annual/periods, risk_neutral_prob, strike_price)
+call_price = price_asian_call_option(tree, r_actual/periods, risk_neutral_prob, strike_price)
+aprx_call_price = approximate_asian_call_option(tree, r_actual/periods, risk_neutral_prob, strike_price)
 
 print_option_details(
         s0=price_0,
