@@ -66,9 +66,12 @@ def calculate_payoffs_at_terminal(averages, K, n):
     return payoffs
 
 # Function to perform backward induction to calculate the option price
-def backward_induction(tree, payoffs, p_risk_neutral, q_risk_neutral, r_daily, n):
+def backward_induction(tree, payoffs, p_risk_neutral, q_risk_neutral, r, n):
     # Initialize option tree with the correct number of nodes per level
     option_tree = [[] for _ in range(n + 1)]  # Create a list of n+1 empty lists for each level
+    
+    #debug print r daily
+    print(f"r_daily: {r}")  # Debugging: print the risk-free rate
 
     # Step 1: Initialize the option values at the terminal nodes using the payoffs
     # Fill the last level (terminal nodes) with the payoffs
@@ -83,7 +86,8 @@ def backward_induction(tree, payoffs, p_risk_neutral, q_risk_neutral, r_daily, n
             #print(f"Expected Payoff at node ({i}, {j}): {expected_payoff}")  # Debugging: print expected payoffs
             
             # Discount the expected payoff to the present
-            option_tree[i].append(((1 + r_daily) ** -(i+1)) * expected_payoff)  # Append to the current level's list
+
+            option_tree[i].append(np.exp(-r * (i + 1)) * expected_payoff) # Apply continuous discounting 
 
     # The price of the option at the root node (t=0) is the final result
     return option_tree[0][0]
@@ -93,11 +97,14 @@ def backward_induction(tree, payoffs, p_risk_neutral, q_risk_neutral, r_daily, n
 def asian_option_price_binomial(S_0, K, T, n, u, d, r):
     
     dt = T / n  # Time step size
-    r_5days=r
     
     # Calculate risk-neutral probabilities
-    p_risk_neutral = (np.exp(r_5days * dt) - d) / (u - d)
+    p_risk_neutral = (np.exp(r * dt) - d) / (u - d)
     q_risk_neutral = 1 - p_risk_neutral
+    
+    #debugging
+    print(f"p_risk_neutral: {p_risk_neutral}, q_risk_neutral: {q_risk_neutral}")
+
     
     # Step 1: Build the stock price tree
     tree = build_stock_tree(S_0, u, d, n)
@@ -116,7 +123,7 @@ def asian_option_price_binomial(S_0, K, T, n, u, d, r):
     print("Exit payoff at termninal function")
     
     # Step 4: Perform backward induction to calculate the option price
-    option_price = backward_induction(tree, payoffs, p_risk_neutral, q_risk_neutral, r_5days, n)
+    option_price = backward_induction(tree, payoffs, p_risk_neutral, q_risk_neutral, r, n)
     
     print("Exit backward induction function")
     
@@ -161,6 +168,9 @@ def main():
     r_annual = 0.01  # Annual risk-free rate
     r_daily = (1 + r_annual)**(1/250) - 1  # Convert annual rate to daily rate
     r_5days = (1 + r_daily) ** dt - 1  # 5-day risk-free rate
+    
+    # Debugging: print the risk-free rate for 5 days
+    print(f"r_5days: {r_5days}") 
     
     K = S_0  # Strike price equal to the initial stock price
 
