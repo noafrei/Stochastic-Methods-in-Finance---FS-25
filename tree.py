@@ -13,7 +13,7 @@ def add_children(node: List, up : float, down : float, max_depth : int):
     depth = node[0]
     if depth == max_depth:
         # convert sum to average
-        node[3] = node[3] / max_depth
+        node[3] = node[3] / (max_depth+1)
         return
 
     prices = node[2]
@@ -137,16 +137,16 @@ def plot_end_leaves_histogram(leaves, num_bins: int):
     axes[1].grid(axis='y', linestyle='--', alpha=0.6)
 
     plt.tight_layout() # Adjust layout to prevent overlap
-    plt.show()
+    plt.savefig("./histogram.pdf")
 
 price_0 = 391.16
 ups = 0
 tree = [0, np.array([ups]), np.array([price_0]), np.array([price_0])]
 sigma = 0.2713948019202162
-up_factor = np.exp(sigma * np.sqrt(1/25))
-down_factor = np.exp(-sigma * np.sqrt(1/25))
-periods = 25
 T_years = 0.5
+up_factor = np.exp(sigma * np.sqrt(T_years/25))
+down_factor = np.exp(-sigma * np.sqrt(T_years/25))
+periods = 25
 
 r_annual = 0.01
 r_actual = r_annual * T_years
@@ -177,7 +177,7 @@ print_option_details(
         approx=aprx_call_price
     )
 
-#avg_prices = tree[3]
-#print(np.mean(avg_prices), np.std(avg_prices))
-#number_of_bins = 200
-#plot_end_leaves_histogram(tree, num_bins=number_of_bins)
+avg_prices = tree[3]
+print(np.mean(avg_prices), np.std(avg_prices))
+number_of_bins = 100
+plot_end_leaves_histogram(tree, num_bins=number_of_bins)
